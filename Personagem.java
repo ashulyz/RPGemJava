@@ -32,4 +32,3 @@ public abstract class Personagem {
         return nome + " - PV: " + pv + ", Ataque: " + ataque + ", Defesa: " + defesa + ", Mana: " + mana;
     }
 }
-
