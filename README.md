@@ -86,11 +86,11 @@ Este projeto é um jogo de RPG 2D feito em Java. O jogador controla um personage
    ```
 2. Compile o projeto:
    ```
-   javac -d out src/com/rpg/*.java
+   javac -d out/production src/com/rpg/*.java
    ```
 4. Execute o jogo:
    ```
-   java -cp out com.rpg.Main
+   java -cp out/production com.rpg.Main
     ```
    
 ## 👤 Autores
