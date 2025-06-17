@@ -85,9 +85,13 @@ Este projeto é um jogo de RPG 2D feito em Java. O jogador controla um personage
    cd RPG
    ```
 2. Compile o projeto:
+   ```
    javac -d out src/com/rpg/*.java
-3. Execute o jogo:
+   ```
+4. Execute o jogo:
+   ```
    java -cp out com.rpg.Main
+    ```
    
 ## 👤 Autores
 - Maria Eduarda Zampieron (@ashulyz) e Felipe Fernandes Bortolino (@maidenzinho)
