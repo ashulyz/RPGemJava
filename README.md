@@ -7,6 +7,7 @@ Este projeto é um jogo de RPG 2D feito em Java. O jogador controla um personage
 - O mundo e os dados de jogo são armazenados em arquivos `.csv`.
 
 ## 🧱 Estrutura do Projeto
+```
 ├── Documentos.iml
 ├── README.md
 ├── assets
@@ -69,7 +70,7 @@ Este projeto é um jogo de RPG 2D feito em Java. O jogador controla um personage
             ├── ResourceType.java
             ├── World.java
             └── Zombie.java
-
+```
 ## 🛠️ Tecnologias Utilizadas
 - Java
 - Interface gráfica baseada em **Swing**
@@ -82,6 +83,7 @@ Este projeto é um jogo de RPG 2D feito em Java. O jogador controla um personage
    ```bash
    git clone https://github.com/SEU_USUARIO/RPG.git
    cd RPG
+   ```
 2. Compile o projeto:
    javac -d out src/com/rpg/*.java
 3. Execute o jogo:
