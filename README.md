@@ -81,7 +81,8 @@ Este projeto é um jogo de RPG 2D feito em Java. O jogador controla um personage
 ## 🚀 Como Executar
 1. Clone o repositório:
    ```bash
-   git clone https://github.com/SEU_USUARIO/RPG.git
+   git clone https://github.com/ashulyz/RPGemJava.git
+   git clone https://github.com/maidenzinho/RPGemJava.git
    cd RPG
    ```
 2. Compile o projeto:
