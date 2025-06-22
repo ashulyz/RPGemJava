@@ -95,4 +95,4 @@ Este projeto é um jogo de RPG 2D feito em Java. O jogador controla um personage
     ```
    
 ## 👤 Autores
-- Maria Eduarda Zampieron (@ashulyz) e Felipe Fernandes Bortolino (@maidenzinho)
+- @ashulyz e @maidenzinho
