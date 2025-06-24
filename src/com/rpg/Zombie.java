@@ -1,3 +1,4 @@
+// filepath: h:\Projetos\RPGemJava\src\com\rpg\Zombie.java
 package com.rpg;
 
 import java.awt.*;
@@ -49,4 +50,7 @@ public class Zombie extends Character {
     public Rectangle getBounds() {
         return new Rectangle(x, y, width, height);
     }
+
+    // Adicionado para salvar/carregar vida
+    public void setHealth(int h) { this.health = h; }
 }

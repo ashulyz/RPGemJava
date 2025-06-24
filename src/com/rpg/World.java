@@ -87,6 +87,7 @@ public class World {
     // Método para spawnar zumbis (inicial e referência para spawn dinâmico)
     public void spawnZombies(Player player) {
         this.playerRef = player;
+        zombies.clear();
         try {
             Animation anim = new Animation(
                 AssetLoader.loadFrames("assets/sprites/zombie"), 200
@@ -180,5 +181,45 @@ public class World {
 
     public int getRows() {
         return rows;
+    }
+
+    // --- SALVAR E CARREGAR O ESTADO DO JOGO ---
+
+    public void saveGame(Player player) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter("data/game_save.csv"))) {
+            writer.println("PLAYER," + player.x + "," + player.y + "," + player.getHealth());
+            for (Zombie z : zombies) {
+                if (!z.isDead())
+                    writer.println("ZOMBIE," + z.x + "," + z.y + "," + z.getHealth());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void loadGame(Player player) {
+        zombies.clear();
+        try (BufferedReader reader = new BufferedReader(new FileReader("data/game_save.csv"))) {
+            String line;
+            Animation zombieAnim = new Animation(AssetLoader.loadFrames("assets/sprites/zombie"), 200);
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts[0].equals("PLAYER")) {
+                    player.x = Integer.parseInt(parts[1]);
+                    player.y = Integer.parseInt(parts[2]);
+                    player.setHealth(Integer.parseInt(parts[3]));
+                } else if (parts[0].equals("ZOMBIE")) {
+                    int zx = Integer.parseInt(parts[1]);
+                    int zy = Integer.parseInt(parts[2]);
+                    int zhp = Integer.parseInt(parts[3]);
+                    Zombie z = new Zombie(zx, zy, player, zombieAnim);
+                    z.setHealth(zhp);
+                    zombies.add(z);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        this.playerRef = player;
     }
 }

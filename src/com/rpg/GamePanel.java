@@ -5,60 +5,129 @@ import java.awt.event.*;
 import java.io.*;
 import javax.swing.*;
 
-/**
- * Painel principal do jogo, responsável por desenhar e atualizar o game loop.
- */
 public class GamePanel extends JPanel implements ActionListener, KeyListener {
-    public static final int WIDTH = 1024, HEIGHT = 768; // Tamanho da tela
-    private Timer timer; // Timer para o game loop (~60 FPS)
-    private World world; // Mapa do jogo
-    private Player player; // Jogador
-    private long startTime; // Tempo de início da partida
-    private long elapsed; // Tempo decorrido
-    private boolean gameOver = false; // Flag de game over
+    public static final int WIDTH = 1024, HEIGHT = 768;
+    private Timer timer;
+    private World world;
+    private Player player;
+    private long startTime;
+    private long elapsed;
+    private boolean gameOver = false;
+
+    // Menu
+    private boolean showMenu = true;
+    private JButton btnNovo, btnContinuar;
+
+    // Pausa
+    private boolean paused = false;
+    private JButton btnPause, btnSalvar, btnRetomar;
 
     public GamePanel() {
-        setPreferredSize(new Dimension(WIDTH, HEIGHT)); // Define o tamanho do painel
-        setFocusable(true); // Permite receber eventos de teclado
-        addKeyListener(this); // Adiciona o listener de teclado
+        setPreferredSize(new Dimension(WIDTH, HEIGHT));
+        setFocusable(true);
+        addKeyListener(this);
 
-        this.world = new World("data/world.csv"); // Carrega o mapa
-        this.player = new Player(world.getPlayerStartX(), world.getPlayerStartY(), world); // Cria o player
+        this.world = new World("data/world.csv");
+        this.player = new Player(world.getPlayerStartX(), world.getPlayerStartY(), world);
 
-        world.spawnZombies(player); // Spawna zumbis no mapa
+        this.timer = new Timer(16, this);
 
-        this.timer = new Timer(16, this); // Timer para atualizar o jogo a cada 16ms (~60 FPS)
+        // Menu de início
+        btnNovo = new JButton("Novo Jogo");
+        btnContinuar = new JButton("Continuar");
+        btnNovo.setBounds(WIDTH/2-100, HEIGHT/2-60, 200, 40);
+        btnContinuar.setBounds(WIDTH/2-100, HEIGHT/2, 200, 40);
+
+        setLayout(null);
+        add(btnNovo);
+        add(btnContinuar);
+
+        btnNovo.addActionListener(e -> {
+            remove(btnNovo); remove(btnContinuar);
+            showMenu = false;
+            this.player = new Player(world.getPlayerStartX(), world.getPlayerStartY(), world);
+            world.spawnZombies(player);
+            gameOver = false;
+            timer.start();
+            requestFocusInWindow();
+            startTime = System.currentTimeMillis();
+        });
+
+        btnContinuar.addActionListener(e -> {
+            remove(btnNovo); remove(btnContinuar);
+            showMenu = false;
+            this.player = new Player(world.getPlayerStartX(), world.getPlayerStartY(), world);
+            world.loadGame(player);
+            gameOver = false;
+            timer.start();
+            requestFocusInWindow();
+            startTime = System.currentTimeMillis();
+        });
+
+        // Botão de pausa
+        btnPause = new JButton("Pausar");
+        btnPause.setBounds(WIDTH - 120, 20, 100, 32);
+        add(btnPause);
+        btnPause.setVisible(false);
+
+        btnPause.addActionListener(e -> {
+            if (!paused && !gameOver && !showMenu) {
+                paused = true;
+                timer.stop();
+                btnSalvar.setVisible(true);
+                btnRetomar.setVisible(true);
+            }
+        });
+
+        // Botão de salvar durante pausa
+        btnSalvar = new JButton("Salvar");
+        btnSalvar.setBounds(WIDTH/2-110, HEIGHT/2, 100, 40);
+        add(btnSalvar);
+        btnSalvar.setVisible(false);
+
+        btnSalvar.addActionListener(e -> {
+            world.saveGame(player);
+            JOptionPane.showMessageDialog(this, "Jogo salvo!");
+        });
+
+        // Botão de retomar
+        btnRetomar = new JButton("Retomar");
+        btnRetomar.setBounds(WIDTH/2+10, HEIGHT/2, 100, 40);
+        add(btnRetomar);
+        btnRetomar.setVisible(false);
+
+        btnRetomar.addActionListener(e -> {
+            paused = false;
+            btnSalvar.setVisible(false);
+            btnRetomar.setVisible(false);
+            timer.start();
+            requestFocusInWindow();
+        });
     }
 
-    /**
-     * Inicia o jogo.
-     */
     public void startGame() {
-        startTime = System.currentTimeMillis(); // Marca o início
-        timer.start(); // Inicia o timer
+        if (!showMenu) {
+            startTime = System.currentTimeMillis();
+            timer.start();
+        }
     }
 
-    /**
-     * Atualiza o estado do jogo a cada tick do timer.
-     */
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (!gameOver) {
-            player.update();           // Atualiza o jogador
-            world.updateZombies();     // Atualiza os zumbis
-            elapsed = System.currentTimeMillis() - startTime; // Atualiza o tempo
+        if (!gameOver && !showMenu && !paused) {
+            player.update();
+            world.updateZombies();
+            elapsed = System.currentTimeMillis() - startTime;
             if (player.isDead()) {
                 gameOver = true;
                 timer.stop();
-                world.saveBestTime(elapsed); // Salva o tempo sobrevivido
+                world.saveBestTime(elapsed);
+                world.saveGame(player);
             }
         }
-        repaint();  // Solicita uma nova pintura para a tela
+        repaint();
     }
 
-    /**
-     * Lê o melhor tempo salvo em save.csv.
-     */
     private long getBestTime() {
         long best = 0;
         try (BufferedReader reader = new BufferedReader(new FileReader("data/save.csv"))) {
@@ -73,27 +142,41 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         return best;
     }
 
-    /**
-     * Desenha todos os elementos do jogo.
-     */
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        world.draw(g);    // Desenha o mapa e os zumbis
-        player.draw(g);   // Desenha o player
 
-        // Barra de vida
+        btnPause.setVisible(!showMenu && !gameOver);
+
+        if (showMenu) {
+            g.setColor(Color.BLACK);
+            g.fillRect(0, 0, WIDTH, HEIGHT);
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("Arial", Font.BOLD, 48));
+            g.drawString("Vampire Survivor Mini", WIDTH/2-250, HEIGHT/2-100);
+            return;
+        }
+
+        world.draw(g);
+        player.draw(g);
+
         g.setColor(Color.RED);
         g.fillRect(20, 20, player.getHealth() * 2, 16);
         g.setColor(Color.BLACK);
         g.drawRect(20, 20, player.getMaxHealth() * 2, 16);
 
-        // Tempo de sobrevivência
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 18));
         g.drawString("Tempo: " + (elapsed / 1000.0) + "s", 20, 60);
 
-        // Tela de game over
+        if (paused) {
+            g.setColor(new Color(0,0,0,180));
+            g.fillRect(0, 0, WIDTH, HEIGHT);
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("Arial", Font.BOLD, 48));
+            g.drawString("PAUSADO", WIDTH/2-120, HEIGHT/2-60);
+        }
+
         if (gameOver) {
             g.setFont(new Font("Arial", Font.BOLD, 42));
             g.setColor(Color.RED);
@@ -102,7 +185,6 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
             g.setColor(Color.WHITE);
             g.drawString("Sobreviveu por: " + (elapsed / 1000.0) + " segundos", WIDTH / 2 - 160, HEIGHT / 2);
 
-            // Mostra o melhor tempo (ranking)
             long best = getBestTime();
             g.setFont(new Font("Arial", Font.BOLD, 22));
             g.setColor(Color.YELLOW);
@@ -110,8 +192,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         }
     }
 
-    // Eventos de teclado: repassa para o player
-    @Override public void keyPressed(KeyEvent e) { player.keyPressed(e); }
-    @Override public void keyReleased(KeyEvent e) { player.keyReleased(e); }
+    @Override public void keyPressed(KeyEvent e) { if (!showMenu && !paused) player.keyPressed(e); }
+    @Override public void keyReleased(KeyEvent e) { if (!showMenu && !paused) player.keyReleased(e); }
     @Override public void keyTyped(KeyEvent e) { }
 }

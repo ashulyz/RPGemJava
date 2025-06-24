@@ -82,4 +82,7 @@ public class Player extends Character {
             case KeyEvent.VK_D: right = false; break;
         }
     }
+
+    // Adicionado para salvar/carregar vida
+    public void setHealth(int h) { this.health = h; }
 }
